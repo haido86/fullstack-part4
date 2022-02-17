@@ -30,6 +30,21 @@ test("there is existence of  id", async () => {
   expect(response.body[0].id).toBeDefined();
 }, 100000);
 
+test("a valid blog can be added ", async () => {
+  const newBlog = {
+    title: "Go anywhere ",
+    author: "nam",
+    url: "String",
+    likes: 82,
+    id: "620c1d58d95045367687a2hf",
+  };
+
+  await api.post("/api/blogs").send(newBlog);
+
+  const blogsAtEnd = await helper.blogsInDb();
+  expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length + 1);
+});
+
 afterAll(() => {
   mongoose.connection.close();
 });
