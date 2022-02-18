@@ -3,17 +3,17 @@ const Blog = require("../models/blog");
 const initialBlogs = [
   {
     title: "Going to cinema",
-    author: "hag",
+    author: "Hanna Q.",
     url: "String",
     likes: 72,
-    id: "620c0acac6c7ea818379f9bf",
+    id: "3",
   },
   {
     title: "Going ",
-    author: "hhgk",
+    author: "Jack M.",
     url: "String",
     likes: 92,
-    id: "620c1d58d95045367687a2ff",
+    id: "2",
   },
 ];
 
