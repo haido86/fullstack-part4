@@ -45,6 +45,20 @@ test("a valid blog can be added ", async () => {
   expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length + 1);
 });
 
+test("a blog with missing Likes field has 0 like", async () => {
+  const newBlog = {
+    title: "Go anywhere else ",
+    author: "Son",
+    url: "String",
+    id: "5",
+  };
+
+  const response = await api.post("/api/blogs").send(newBlog);
+  console.log("response newBlog", response.body);
+
+  expect(response.body.likes).toBe(0);
+});
+
 afterAll(() => {
   mongoose.connection.close();
 });
