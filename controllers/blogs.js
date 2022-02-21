@@ -47,21 +47,27 @@ blogsRouter.delete("/:id", async (request, response, next) => {
   }
 });
 
-// blogsRouter.put('/:id', (request, response, next) => {
-//   const body = request.body
+blogsRouter.put("/:id", async (request, response, next) => {
+  try {
+    const body = request.body;
+    const blog = new Blog({
+      title: body.title,
+      author: body.author,
+      url: body.url,
+      likes: body.likes,
+    });
 
-//   const Blog = {
-//     title: body.title,
-//     author: body.author,
-//     url: body.url,
-//     likes: body.likes,
-//   }
-
-//   Blog.findByIdAndUpdate(request.params.id, Blog, { new: true })
-//     .then(updatedBlog => {
-//       response.json(updatedBlog)
-//     })
-//     .catch(error => next(error))
-// })
+    updatedBlog = await Blog.findByIdAndUpdate(
+      request.params.id,
+      request.body,
+      {
+        new: true,
+      }
+    );
+    response.json(updatedBlog);
+  } catch (exception) {
+    next(exception);
+  }
+});
 
 module.exports = blogsRouter;
