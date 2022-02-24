@@ -3,9 +3,9 @@ Content-Type: application/json
 
 
 {
-  "title": "I want to go home ",
-  "author": "Hemington J.",
-  "likes": "75",
-  "url": "home to come"
-
+  "title": "When we are coming home ",
+  "author": "John Tim",
+  "likes": "45",
+  "url": "mountain",
+  "userId":"6215fcd3a1cb8e23633ce982"
 }
