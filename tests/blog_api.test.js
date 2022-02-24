@@ -4,6 +4,8 @@ const app = require("../app");
 const api = supertest(app);
 const Blog = require("../models/blog");
 const helper = require("./test_helper");
+const bcrypt = require("bcryptjs");
+const User = require("../models/user");
 
 // test("blogs are returned as json", async () => {
 //   await api
@@ -82,16 +84,67 @@ beforeEach(async () => {
 //   expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length - 1);
 // });
 
-test("a blog-like field can be edited", async () => {
-  const blogsAtStart = await helper.blogsInDb();
-  const blogToBeEdited = blogsAtStart[0];
-  const updatedLikes = { likes: 90 };
+// test("a blog-like field can be edited", async () => {
+//   const blogsAtStart = await helper.blogsInDb();
+//   const blogToBeEdited = blogsAtStart[0];
+//   const updatedLikes = { likes: 90 };
 
-  const updatedBlog = await api
-    .put(`/api/blogs/${blogToBeEdited.id}`)
-    .send(updatedLikes);
+//   const updatedBlog = await api
+//     .put(`/api/blogs/${blogToBeEdited.id}`)
+//     .send(updatedLikes);
 
-  expect(updatedBlog.body.likes).toBe(updatedLikes.likes);
+//   expect(updatedBlog.body.likes).toBe(updatedLikes.likes);
+// });
+
+describe("when there is initially one user in db", () => {
+  beforeEach(async () => {
+    await User.deleteMany({});
+
+    const passwordHash = await bcrypt.hash("secret", 10);
+    const user = new User({ username: "mia_truong", passwordHash });
+
+    await user.save();
+  });
+
+  test("existing username cannot be added", async () => {
+    const newUser = {
+      username: "mia_truong",
+      name: "Mia Truong",
+      password: "secret",
+    };
+
+    const response = await api.post("/api/users").send(newUser).expect(400);
+
+    expect(response.body.error).toBe("username must be unique");
+  });
+});
+
+test("username must be at least 3 character long", async () => {
+  const newUser = {
+    username: "rt",
+    name: "Mia Truong",
+    password: "secret",
+  };
+
+  const response = await api.post("/api/users").send(newUser).expect(400);
+
+  expect(response.body.error).toBe(
+    "username must be at least 3 characters long"
+  );
+});
+
+test("password must be at least 3 character long", async () => {
+  const newUser = {
+    username: "liam_truong",
+    name: "Liam Truong",
+    password: "se",
+  };
+
+  const response = await api.post("/api/users").send(newUser).expect(400);
+
+  expect(response.body.error).toBe(
+    "password must be at least 3 characters long"
+  );
 });
 
 afterAll(() => {

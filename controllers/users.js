@@ -9,7 +9,25 @@ usersRouter.get("/", async (request, response) => {
 
 usersRouter.post("/", async (request, response) => {
   const { username, name, password } = request.body;
-  console.log("request.body", request.body);
+
+  const existingUser = await User.findOne({ username });
+  if (existingUser) {
+    return response.status(400).json({
+      error: "username must be unique",
+    });
+  }
+
+  if (request.body.username.length < 3) {
+    return response.status(400).json({
+      error: "username must be at least 3 characters long",
+    });
+  }
+
+  if (request.body.password.length < 3) {
+    return response.status(400).json({
+      error: "password must be at least 3 characters long",
+    });
+  }
 
   const salt = await bcrypt.genSaltSync(10);
 
