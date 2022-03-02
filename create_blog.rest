@@ -1,11 +1,11 @@
 POST http://localhost:3003/api/blogs
 Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImxpYW1MYW4iLCJpZCI6IjYyMTc3ZTNhMzU5YWE2ODQ3NGVkMWZhNiIsImlhdCI6MTY0NTcwOTAyNn0.Yz9QVabnEgzY-j4rioqqahXmBSQ3zfiSey0D6w9bjMM
 
 
 {
   "title": "When swimming home ",
-  "author": "Tim Son",
+  "author": "Hanna J.Son",
   "likes": "65",
-  "url": "fountain",
-  "userId":"62177e3a359aa68474ed1fa6"
-}
+  "url": "fountain"
+  }
