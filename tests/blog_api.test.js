@@ -7,94 +7,129 @@ const helper = require("./test_helper");
 const bcrypt = require("bcryptjs");
 const User = require("../models/user");
 
-// test("blogs are returned as json", async () => {
-//   await api
-//     .get("/api/blogs")
-//     .expect(200)
-//     .expect("Content-Type", /application\/json/);
-// }, 100000);
-
+let TOKEN = "";
 beforeEach(async () => {
+  await User.deleteMany({});
+
+  const passwordHash = await bcrypt.hash("se123", 10);
+  const user = new User({ username: "kane_truong", passwordHash });
+
+  await user.save();
+
   await Blog.deleteMany({});
   let blogObject = new Blog(helper.initialBlogs[0]);
   await blogObject.save();
   blogObject = new Blog(helper.initialBlogs[1]);
   await blogObject.save();
+
+  const loginUser = {
+    username: "kane_truong",
+    password: "se123",
+  };
+  const responseToken = await api.post("/api/login").send(loginUser);
+
+  TOKEN = responseToken.body.token;
 });
 
-// test("there are 2 blogs", async () => {
-//   const response = await api.get("/api/blogs");
-//   expect(response.body).toHaveLength(helper.initialBlogs.length);
-// }, 100000);
+test("blogs are returned as json", async () => {
+  await api
+    .get("/api/blogs")
+    .set("Authorization", `bearer ${TOKEN}`)
+    .expect(200)
+    .expect("Content-Type", /application\/json/);
+}, 100000);
 
-// test("there is existence of  id", async () => {
-//   const response = await api.get("/api/blogs");
-//   expect(response.body[0].id).toBeDefined();
-// }, 100000);
+test("there are 2 blogs", async () => {
+  const response = await api
+    .get("/api/blogs")
+    .set("Authorization", `bearer ${TOKEN}`);
+  expect(response.body).toHaveLength(helper.initialBlogs.length);
+}, 100000);
 
-// test("a valid blog can be added ", async () => {
-//   const newBlog = {
-//     title: "Go anywhere ",
-//     author: "nam",
-//     url: "String",
-//     likes: 82,
-//     id: "620c1d58d95045367687a2hf",
-//   };
+test("there is existence of  id", async () => {
+  const response = await api
+    .get("/api/blogs")
+    .set("Authorization", `bearer ${TOKEN}`);
+  expect(response.body[0].id).toBeDefined();
+}, 100000);
 
-//   await api.post("/api/blogs").send(newBlog);
+test("a valid blog can be added ", async () => {
+  const newBlog = {
+    title: "Go anywhere ",
+    author: "nam",
+    url: "String",
+    likes: 82,
+    id: "620c1d58d95045367687a2hf",
+  };
 
-//   const blogsAtEnd = await helper.blogsInDb();
-//   expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length + 1);
-// });
+  await api
+    .post("/api/blogs")
+    .send(newBlog)
+    .set("Authorization", `bearer ${TOKEN}`);
 
-// test("a blog with missing Likes field has 0 like", async () => {
-//   const newBlog = {
-//     title: "Go anywhere else ",
-//     author: "Son",
-//     url: "String",
-//     id: "5",
-//   };
+  const blogsAtEnd = await helper.blogsInDb();
+  expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length + 1);
+});
 
-//   const response = await api.post("/api/blogs").send(newBlog);
+test("a blog with missing Likes field has 0 like", async () => {
+  const newBlog = {
+    title: "Go anywhere else ",
+    author: "Son",
+    url: "String",
+    id: "5",
+  };
 
-//   expect(response.body.likes).toBe(0);
-// });
+  const response = await api
+    .post("/api/blogs")
+    .send(newBlog)
+    .set("Authorization", `bearer ${TOKEN}`);
 
-// test("a blog without title and url cannot be added", async () => {
-//   const newBlog = {
-//     author: "Jimmy",
-//     id: 7,
-//     likes: 23,
-//   };
+  expect(response.body.likes).toBe(0);
+});
 
-//   const response = await api.post("/api/blogs").send(newBlog).expect(400);
-//   const blogsAtEnd = await helper.blogsInDb();
+test("a blog without title and url cannot be added", async () => {
+  const newBlog = {
+    author: "Jimmy",
+    id: 7,
+    likes: 23,
+  };
 
-//   expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length);
-// });
+  const response = await api
+    .post("/api/blogs")
+    .send(newBlog)
+    .set("Authorization", `bearer ${TOKEN}`)
+    .expect(400);
+  const blogsAtEnd = await helper.blogsInDb();
 
-// test("a blog can be deleted", async () => {
-//   const blogsAtStart = await helper.blogsInDb();
-//   const blogToDelete = blogsAtStart[0];
+  expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length);
+});
 
-//   await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204);
+test("a blog cannot be deleted by other users", async () => {
+  const blogsAtStart = await helper.blogsInDb();
+  const blogToDelete = blogsAtStart[0];
 
-//   const blogsAtEnd = await helper.blogsInDb();
+  await api
+    .delete(`/api/blogs/${blogToDelete.id}`)
+    .set("Authorization", `bearer ${TOKEN}`)
+    .expect(403);
 
-//   expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length - 1);
-// });
+  const blogsAtEnd = await helper.blogsInDb();
 
-// test("a blog-like field can be edited", async () => {
-//   const blogsAtStart = await helper.blogsInDb();
-//   const blogToBeEdited = blogsAtStart[0];
-//   const updatedLikes = { likes: 90 };
+  expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length);
+});
 
-//   const updatedBlog = await api
-//     .put(`/api/blogs/${blogToBeEdited.id}`)
-//     .send(updatedLikes);
+test("a blog-like field can be edited", async () => {
+  const blogsAtStart = await helper.blogsInDb();
+  const blogToBeEdited = blogsAtStart[0];
+  const updatedLikes = { likes: 90 };
 
-//   expect(updatedBlog.body.likes).toBe(updatedLikes.likes);
-// });
+  const updatedBlog = await api
+    .put(`/api/blogs/${blogToBeEdited.id}`)
+    .set("Authorization", `bearer ${TOKEN}`)
+    .send(updatedLikes);
+
+  expect(updatedBlog.body.likes).toBe(updatedLikes.likes);
+});
 
 describe("when there is initially one user in db", () => {
   beforeEach(async () => {

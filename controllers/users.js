@@ -46,7 +46,6 @@ usersRouter.post("/", async (request, response) => {
 
 usersRouter.delete("/:id", async (request, response, next) => {
   try {
-    console.log("params.id", request.params.id);
     await User.findByIdAndRemove(request.params.id);
     response.status(204).end();
   } catch (exception) {
